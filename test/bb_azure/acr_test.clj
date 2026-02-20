@@ -46,7 +46,7 @@
               "--orderby" "time_desc"
               "--top" "5"]
              (:args (first calls))))))
-  
+
   (testing "tags accepts custom limit"
     (let [calls (az/with-capture
                   (acr/tags "myregistry" "myrepo" 10))]

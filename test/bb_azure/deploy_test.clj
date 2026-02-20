@@ -11,11 +11,11 @@
 (deftest params->bicep-args-test
   (testing "empty params returns empty vector"
     (is (= [] (utils/params->bicep-args {}))))
-  
+
   (testing "single param produces correct bicep arg"
     (is (= ["-p" "name=dev"]
            (utils/params->bicep-args {:name "dev"}))))
-  
+
   (testing "multiple params produce multiple -p flags"
     (let [args (utils/params->bicep-args {:name "dev" :env "production" :count 5})]
       (is (= 6 (count args))) ;; 3 params * 2 items each
@@ -25,7 +25,7 @@
         (is (contains? values "name=dev"))
         (is (contains? values "env=production"))
         (is (contains? values "count=5")))))
-  
+
   (testing "handles special characters in values"
     (is (= ["-p" "password=abc123!@#"]
            (utils/params->bicep-args {:password "abc123!@#"})))))
@@ -53,7 +53,7 @@
         (is (= "--no-pretty-print" (nth args 7)))
         ;; Rest should be bicep params
         (is (some #(= "-p" %) (drop 8 args))))))
-  
+
   (testing "whatif! uses default template when not specified"
     (let [calls (az/with-capture
                   (deploy/whatif! {:location "eastus"

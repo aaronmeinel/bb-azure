@@ -10,7 +10,7 @@
 (deftest explain-mode-test
   (testing "explain mode is off by default"
     (is (false? az/*explain-mode*)))
-  
+
   (testing "explain mode can be bound"
     (binding [az/*explain-mode* true]
       (is (true? az/*explain-mode*)))))
@@ -18,7 +18,7 @@
 (deftest dry-run-test
   (testing "dry-run is off by default"
     (is (false? az/*dry-run*)))
-  
+
   (testing "dry-run prevents execution"
     (binding [az/*dry-run* true]
       ;; az returns nil without executing
@@ -31,35 +31,35 @@
 (deftest capture-calls-test
   (testing "capture-calls is nil by default"
     (is (nil? az/*capture-calls*)))
-  
+
   (testing "with-capture captures az calls"
     (let [calls (az/with-capture
                   (az/az "webapp" "list" "-g" "my-rg"))]
       (is (= 1 (count calls)))
       (is (= :az (:fn (first calls))))
       (is (= ["webapp" "list" "-g" "my-rg"] (:args (first calls))))))
-  
+
   (testing "with-capture captures az! calls"
     (let [calls (az/with-capture
                   (az/az! "group" "show" "-n" "rg-test"))]
       (is (= 1 (count calls)))
       (is (= :az! (:fn (first calls))))
       (is (= ["group" "show" "-n" "rg-test"] (:args (first calls))))))
-  
+
   (testing "with-capture captures az-run! calls"
     (let [calls (az/with-capture
                   (az/az-run! "webapp" "restart" "-g" "rg" "-n" "app"))]
       (is (= 1 (count calls)))
       (is (= :az-run! (:fn (first calls))))
       (is (= ["webapp" "restart" "-g" "rg" "-n" "app"] (:args (first calls))))))
-  
+
   (testing "with-capture captures az-interactive! calls"
     (let [calls (az/with-capture
                   (az/az-interactive! "webapp" "ssh" "-g" "rg" "-n" "app"))]
       (is (= 1 (count calls)))
       (is (= :az-interactive! (:fn (first calls))))
       (is (= ["webapp" "ssh" "-g" "rg" "-n" "app"] (:args (first calls))))))
-  
+
   (testing "with-capture captures multiple calls"
     (let [calls (az/with-capture
                   (az/az "webapp" "list")

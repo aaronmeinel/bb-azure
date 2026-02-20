@@ -27,13 +27,13 @@
     (let [result (errors/parse-azure-error sample-stderr)]
       (is (map? result))
       (is (= "InvalidTemplateDeployment" (get-in result [:error :code])))))
-  
+
   (testing "returns nil for non-error stderr"
     (is (nil? (errors/parse-azure-error "Some other output"))))
-  
+
   (testing "returns nil for nil input"
     (is (nil? (errors/parse-azure-error nil))))
-  
+
   (testing "returns nil for malformed JSON"
     (is (nil? (errors/parse-azure-error "ERROR: {not valid json}")))))
 
@@ -48,7 +48,7 @@
       (is (= 1 (count result)))
       (is (= 0 (:depth (first result))))
       (is (= "Error" (:code (first result))))))
-  
+
   (testing "extracts nested errors with depth"
     (let [result (errors/extract-errors nested-error)]
       (is (= 3 (count result)))
@@ -64,7 +64,7 @@
   (testing "formats single error"
     (let [result (errors/format-error {:code "Error" :message "Failed"})]
       (is (str/includes? result "Error: Failed"))))
-  
+
   (testing "formats nested errors as tree"
     (let [result (errors/format-error nested-error)]
       (is (str/includes? result "InvalidTemplateDeployment"))

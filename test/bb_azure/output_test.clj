@@ -25,7 +25,7 @@
       (is (str/includes? result "error"))
       (is (str/includes? result (:red out/colors)))
       (is (str/includes? result (:reset out/colors)))))
-  
+
   (testing "handles unknown color gracefully"
     (let [result (out/colorize :unknown "text")]
       (is (str/includes? result "text"))
@@ -71,9 +71,9 @@
 (deftest get-env-test
   (testing "returns nil for non-existent var"
     (is (nil? (out/get-env "DEFINITELY_NOT_SET_VAR_12345"))))
-  
+
   (testing "returns default for non-existent var"
     (is (= "default" (out/get-env "DEFINITELY_NOT_SET_VAR_12345" "default"))))
-  
+
   (testing "returns value for existing var"
     (is (some? (out/get-env "HOME")))))
