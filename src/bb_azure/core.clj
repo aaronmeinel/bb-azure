@@ -27,6 +27,11 @@
   "When true, print commands but don't execute"
   false)
 
+(def ^:dynamic *capture-calls*
+  "When bound to an atom, captures [fn-name args] instead of executing.
+   Useful for testing argument construction without Azure connection."
+  nil)
+
 ;; -----------------------------------------------------------------------------
 ;; Internal Helpers
 ;; -----------------------------------------------------------------------------
@@ -46,6 +51,13 @@
   []
   (not *dry-run*))
 
+(defn- capture!
+  "Capture a call if *capture-calls* is bound, returns true if captured"
+  [fn-name args]
+  (when *capture-calls*
+    (swap! *capture-calls* conj {:fn fn-name :args (vec args)})
+    true))
+
 (defn- explain
   "Print command if in explain mode"
   [args]
@@ -64,7 +76,9 @@
      (az \"webapp\" \"list\" \"-g\" \"my-rg\")"
   [& args]
   (explain args)
-  (when (should-execute?)
+  (cond
+    (capture! :az args) nil
+    (should-execute?)
     (let [result (p/sh (az-cmd (concat args ["-o" "json"])))]
       (when (zero? (:exit result))
         (json/parse-string (:out result) true)))))
@@ -77,13 +91,15 @@
      (az! \"webapp\" \"list\" \"-g\" \"my-rg\")"
   [& args]
   (explain args)
-  (if (should-execute?)
+  (cond
+    (capture! :az! args) {}
+    (should-execute?)
     (let [result (p/sh (az-cmd (concat args ["-o" "json"])))]
       (if (zero? (:exit result))
         (json/parse-string (:out result) true)
         (throw (ex-info (str "az command failed: " (:err result))
                         {:args args :exit (:exit result) :stderr (:err result)}))))
-    {}))
+    :else {}))
 
 (defn az-run!
   "Execute az CLI for side effects. Returns nil. Throws on failure.
@@ -92,11 +108,12 @@
      (az-run! \"webapp\" \"restart\" \"-g\" \"my-rg\" \"-n\" \"my-app\")"
   [& args]
   (explain args)
-  (when (should-execute?)
-    (let [result (p/sh (az-cmd (concat args ["-o" "none"])))]
-      (when-not (zero? (:exit result))
-        (throw (ex-info (str "az command failed: " (:err result))
-                        {:args args :exit (:exit result) :stderr (:err result)}))))))
+  (when-not (capture! :az-run! args)
+    (when (should-execute?)
+      (let [result (p/sh (az-cmd (concat args ["-o" "none"])))]
+        (when-not (zero? (:exit result))
+          (throw (ex-info (str "az command failed: " (:err result))
+                          {:args args :exit (:exit result) :stderr (:err result)})))))))
 
 (defn az-interactive!
   "Execute az CLI with inherited stdin/stdout. For interactive commands.
@@ -105,5 +122,26 @@
      (az-interactive! \"webapp\" \"ssh\" \"-g\" \"my-rg\" \"-n\" \"my-app\")"
   [& args]
   (explain args)
-  (when (should-execute?)
-    (p/shell {:inherit true} (az-cmd args))))
+  (when-not (capture! :az-interactive! args)
+    (when (should-execute?)
+      (p/shell {:inherit true} (az-cmd args)))))
+
+;; -----------------------------------------------------------------------------
+;; Test Helpers
+;; -----------------------------------------------------------------------------
+
+(defmacro with-capture
+  "Execute body with call capture enabled. Returns vector of captured calls.
+   Each call is a map with :fn and :args keys.
+   
+   Usage:
+     (with-capture
+       (az \"webapp\" \"list\")
+       (az-run! \"webapp\" \"restart\" \"-g\" \"rg\" \"-n\" \"app\"))
+     => [{:fn :az :args [\"webapp\" \"list\"]}
+         {:fn :az-run! :args [\"webapp\" \"restart\" \"-g\" \"rg\" \"-n\" \"app\"]}]"
+  [& body]
+  `(let [calls# (atom [])]
+     (binding [*capture-calls* calls#]
+       ~@body)
+     @calls#))

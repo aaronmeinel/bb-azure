@@ -8,11 +8,21 @@
                 (require 'bb-azure.core-test
                          'bb-azure.errors-test
                          'bb-azure.utils-test
-                         'bb-azure.output-test)
+                         'bb-azure.output-test
+                         'bb-azure.webapp-test
+                         'bb-azure.acr-test
+                         'bb-azure.rg-test
+                         'bb-azure.postgres-test
+                         'bb-azure.deploy-test)
                 (let [result (clojure.test/run-tests
                               'bb-azure.core-test
                               'bb-azure.errors-test
                               'bb-azure.utils-test
-                              'bb-azure.output-test)]
+                              'bb-azure.output-test
+                              'bb-azure.webapp-test
+                              'bb-azure.acr-test
+                              'bb-azure.rg-test
+                              'bb-azure.postgres-test
+                              'bb-azure.deploy-test)]
                   (when-not (and (zero? (:fail result)) (zero? (:error result)))
                     (System/exit 1))))}}}
