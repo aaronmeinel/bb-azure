@@ -70,15 +70,15 @@
         config (get environments env-key)]
     (when-not config
       (out/die! "Unknown environment:" env-name))
-    
+
     (out/header (str "Deploying to " (name env-key)))
-    
+
     ;; Use dry-run mode if requested
     (binding [az/*explain-mode* true
               az/*dry-run* (:dry-run opts false)]
       (when (:dry-run opts)
         (out/warn "DRY RUN MODE - no changes will be made"))
-      
+
       (try
         (ensure-resource-group config)
         (deploy-webapp config)

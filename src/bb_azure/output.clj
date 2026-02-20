@@ -73,6 +73,13 @@
   (flush)
   (= "y" (str/lower-case (or (read-line) ""))))
 
+(defn confirm-typed
+  "Ask user to type expected value to confirm (for dangerous operations)"
+  [prompt expected]
+  (print (str prompt " [type '" expected "' to confirm]: "))
+  (flush)
+  (= (str/trim (or (read-line) "")) expected))
+
 ;; -----------------------------------------------------------------------------
 ;; Environment
 ;; -----------------------------------------------------------------------------
