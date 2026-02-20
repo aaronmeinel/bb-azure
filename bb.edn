@@ -1,2 +1,18 @@
-{:paths ["src"]
- :deps {}}
+{:paths ["src" "test"]
+ :deps {cheshire/cheshire {:mvn/version "5.13.0"}}
+ 
+ :tasks
+ {test {:doc "Run tests"
+        :task (do
+                (require 'clojure.test)
+                (require 'bb-azure.core-test
+                         'bb-azure.errors-test
+                         'bb-azure.utils-test
+                         'bb-azure.output-test)
+                (let [result (clojure.test/run-tests
+                              'bb-azure.core-test
+                              'bb-azure.errors-test
+                              'bb-azure.utils-test
+                              'bb-azure.output-test)]
+                  (when-not (and (zero? (:fail result)) (zero? (:error result)))
+                    (System/exit 1))))}}}
