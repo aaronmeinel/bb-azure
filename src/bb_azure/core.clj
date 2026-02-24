@@ -124,7 +124,7 @@
   (explain args)
   (when-not (capture! :az-interactive! args)
     (when (should-execute?)
-      (p/shell {:inherit true} (az-cmd args)))))
+      (p/shell {:inherit true} (str/join " " (az-cmd args))))))
 
 ;; -----------------------------------------------------------------------------
 ;; Test Helpers
